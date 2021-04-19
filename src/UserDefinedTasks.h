@@ -72,9 +72,9 @@ TaskHandle_t taskHandle3;
 
 
 void Periodic_Task_Routine(void *pvParameters);
-void Task1_Init(void *pvParameters);
-void Task2_Init(void *pvParameters);
-void Task3_Init(void *pvParameters);
+void Task1_Generator(void *pvParameters);
+void Task2_Generator(void *pvParameters);
+void Task3_Generator(void *pvParameters);
 
 
 

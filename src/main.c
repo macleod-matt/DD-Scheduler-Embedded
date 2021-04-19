@@ -14,9 +14,9 @@ TaskHandle_t taskHandle3;
 
 void Read_User_Defined_Tasks(void){
 
-	xTaskCreate(Task1_Init,"_Task_1", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_MED, &taskHandle1);
-	xTaskCreate(Task2_Init,"_Task_2", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_MED, &taskHandle2);
-	xTaskCreate(Task3_Init,"_Task_3", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_MED, &taskHandle3);
+	xTaskCreate(Task1_Generator,"_Task_1", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_MED, &taskHandle1);
+	xTaskCreate(Task2_Generator,"_Task_2", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_MED, &taskHandle2);
+	xTaskCreate(Task3_Generator,"_Task_3", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_MED, &taskHandle3);
 
 }
 

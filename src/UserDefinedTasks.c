@@ -28,8 +28,7 @@
  *  	3	                       200                              500
  */
 
-
-pTaskHandle_t Create_DD_Task_Node(void){
+pTaskHandle_t Create_DD_Task_Node(void) {
 	pTaskHandle_t taskNode = (pTaskHandle_t) pvPortMalloc(sizeof(dd_task_t));
 
 	taskNode->task_handle = NULL;
@@ -54,7 +53,7 @@ pTaskHandle_t Create_DD_Task_Node(void){
 
  */
 
-void Periodic_Task_Routine(void *pvParameters){
+void Periodic_Task_Routine(void *pvParameters) {
 
 	pTaskHandle_t taskNode = (pTaskHandle_t) pvParameters;
 
@@ -67,8 +66,7 @@ void Periodic_Task_Routine(void *pvParameters){
 
 	while (1) {
 
-
-		if (taskNode->task_state == ActiveState || taskNode->task_state == OverdueState ) {
+		if (taskNode->task_state == ActiveState) {
 
 			currentTime = xTaskGetTickCount();
 
@@ -106,18 +104,16 @@ void Periodic_Task_Routine(void *pvParameters){
 			complete_dd_task(taskNode);
 		}
 
-		if (taskNode->task_type == DD_APERIODIC) {
-			delete_dd_task(taskNode->task_handle);
-
-		}
+//		if (taskNode->task_type == DD_APERIODIC) {
+//			delete_dd_task(taskNode->task_handle);
+//
+//		}
 
 	}
-
 
 	vTaskDelete(NULL);
 
 }
-
 
 /*
  * Contains the actual deadline-sensitive application code written by the user.
@@ -126,7 +122,7 @@ void Periodic_Task_Routine(void *pvParameters){
  *
  */
 
-void Task1_Init(void *pvParameters) {
+void Task1_Generator(void *pvParameters) {
 
 	pTaskHandle_t newTask = Create_DD_Task_Node();
 
@@ -141,8 +137,6 @@ void Task1_Init(void *pvParameters) {
 	newTask->release_time = currentTime;
 	newTask->absolute_deadline = currentTime + deadline;
 
-
-
 	while (1) {
 
 		create_dd_task(newTask);
@@ -151,7 +145,7 @@ void Task1_Init(void *pvParameters) {
 	}
 }
 
-void Task2_Init(void *pvParameters) {
+void Task2_Generator(void *pvParameters) {
 
 	TickType_t deadline = task2_PERIOD;
 	pTaskHandle_t newTask = Create_DD_Task_Node();
@@ -165,7 +159,6 @@ void Task2_Init(void *pvParameters) {
 	newTask->release_time = currentTime;
 	newTask->absolute_deadline = currentTime + deadline;
 
-
 	while (1) {
 
 		create_dd_task(newTask);
@@ -175,7 +168,7 @@ void Task2_Init(void *pvParameters) {
 	}
 }
 
-void Task3_Init(void *pvParameters) {
+void Task3_Generator(void *pvParameters) {
 	TickType_t deadline = task3_PERIOD;
 	pTaskHandle_t newTask = Create_DD_Task_Node();
 
@@ -189,8 +182,6 @@ void Task3_Init(void *pvParameters) {
 	newTask->absolute_deadline = currentTime + deadline;
 
 	while (1) {
-
-
 
 		create_dd_task(newTask);
 

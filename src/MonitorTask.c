@@ -73,7 +73,7 @@ void print_LL_Nodes(pTaskListHandle_t LinkedList) {
 		//vPortFree((void*) LL_index); // free memory block
 
 		LL_index = LL_index->next;
-		delete_dd_task(LL_index);
+		//delete_dd_task(LL_index);
 
 	}
 	return;

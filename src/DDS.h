@@ -65,13 +65,14 @@ uint32_t release_dd_task(DD_TaskHandle_t );
 
 uint32_t delete_dd_task(DD_TaskHandle_t );
 uint32_t complete_dd_task(pTaskHandle_t pTask );
-
+pTaskHandle_t task_exists_in_List(pTaskListHandle_t , pTaskHandle_t  );
 
 
 
 DD_TaskList_t taskList_ACTIVE;
 DD_TaskList_t taskList_OVERDUE;
 DD_TaskList_t taskList_COMPLETED;
+
 
 //pNamesNode_t taskList_COMPLETED;
 
