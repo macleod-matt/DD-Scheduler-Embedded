@@ -17,14 +17,7 @@ uint32_t get_overdue_dd_task_list(void);
 
 void MonitorTask(void){
 
-	vTaskDelay(10000);
-
 	while (1) {
-
-
-
-		debugPrint("\n\n*****************************************************************************\n\n");
-		debugPrint("\n\n\n.............................................................................:\n");
 
 		debugPrint("\n\n MONITORING TASK:\n Current Time: [%u]\n Priority Level: [%u] \n\n",
 				(unsigned int) xTaskGetTickCount(),
@@ -34,7 +27,6 @@ void MonitorTask(void){
 		get_completed_dd_task_list();
 		get_overdue_dd_task_list();
 
-		vTaskDelay(100);
 	}
 
 }
@@ -113,14 +105,10 @@ uint32_t get_active_dd_task_list(void) {
 		if ( xQueueReceive(xMonitor_Msg_Queue,&msg_activeList,
 				portMAX_DELAY) == pdTRUE) {
 
-			debugPrint(
-					"\n\n................ACTIVE TASKS ...................: \n\n");
+			debugPrint("ACTIVE TASKS:\n");
 
 			print_LL_Nodes(msg_activeList.pList);
-			debugPrint(
-					"\n\n.................................................\n\n");
 
-			//vPortFree((void*)msg_activeList.pList);
 
 			msg_activeList.pList = NULL;
 		}

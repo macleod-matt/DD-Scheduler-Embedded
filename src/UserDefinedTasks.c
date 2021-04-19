@@ -75,7 +75,7 @@ void Periodic_Task_Routine(void *pvParameters) {
 			debugPrint(
 					"\n|Executing Task [%s] | Time = %u | Priority = %u | \n",
 					taskNode->task_name, (unsigned int) currentTime,
-					(unsigned int) uxTaskPriorityGet( NULL));
+					(unsigned int) uxTaskPriorityGet( taskNode->task_handle));
 
 			lastTick = currentTime;
 
@@ -97,17 +97,17 @@ void Periodic_Task_Routine(void *pvParameters) {
 
 			relativeDeadline = absDeadline - currentTime;
 
-			vTaskDelayUntil(&currentTime, relativeDeadline);
+//			vTaskDelayUntil(&currentTime, relativeDeadline);
 
-			taskNode->next = NULL;
-			taskNode->previous = NULL;
+//			taskNode->next = NULL;
+//			taskNode->previous = NULL;
 			complete_dd_task(taskNode);
 		}
 
-//		if (taskNode->task_type == DD_APERIODIC) {
-//			delete_dd_task(taskNode->task_handle);
-//
-//		}
+		if (taskNode->task_type == DD_APERIODIC) {
+			delete_dd_task(taskNode->task_handle);
+
+		}
 
 	}
 

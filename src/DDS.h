@@ -12,7 +12,10 @@
 #define PriorityLevel_LOW (0)
 #define PriorityLevel_MED (1)
 #define PriorityLevel_HIGH (2)
-#define PrioirtyLevel_MAX (5)
+#define PriorityLevel_MAXT (7)
+#define PriorityLevel_UTIL (8)
+#define PriorityLevel_MONITOR (9)
+#define PrioirtyLevel_MAX (10)
 
 
 
@@ -69,9 +72,9 @@ pTaskHandle_t task_exists_in_List(pTaskListHandle_t , pTaskHandle_t  );
 
 
 
-DD_TaskList_t taskList_ACTIVE;
-DD_TaskList_t taskList_OVERDUE;
-DD_TaskList_t taskList_COMPLETED;
+extern DD_TaskList_t taskList_ACTIVE;
+extern DD_TaskList_t taskList_OVERDUE;
+extern DD_TaskList_t taskList_COMPLETED;
 
 
 //pNamesNode_t taskList_COMPLETED;

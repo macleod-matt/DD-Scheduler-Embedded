@@ -11,6 +11,8 @@
 #include "STM_GPIO_CONFIG.h"
 #include "MonitorTask.h"
 
+
+
 bool Free_DDT_NODE(pTaskHandle_t task_to_remove) {
 	// Check input parameters are not NULL
 	if (task_to_remove == NULL) {
@@ -97,61 +99,63 @@ void Init_DD_TaskList(pTaskListHandle_t DDT_List) {
 
 void Insert_DDT_to_LL(pTaskHandle_t task, pTaskListHandle_t taskList) {
 
-	if ((taskList->head == NULL) && (taskList->tail == NULL)) {
 
-		taskList->head = task;
-		taskList->tail = task;
-		vTaskPrioritySet(task->task_handle, PriorityLevel_HIGH); // Set high priority initally since it is the only task in LL
+	    pTaskHandle_t LL_index = taskList->head;
 
-		return;
 
+	    if ((taskList->head == NULL) && (taskList->tail == NULL)) {
+	        taskList->head = task;
+	        taskList->tail = task;
+	    }
+	    else
+	    {
+	        while (LL_index != NULL) {
+
+	            // Check if deadline of new task is less than that of the current head of list
+	            if (task->absolute_deadline < LL_index->absolute_deadline) {
+
+	                // check if Linked list index is the head
+	                if (LL_index == taskList->head) {
+	                    taskList->head = task; // If so, make the head of the list now the new task
+	                }
+
+	                task->next = LL_index;
+	                task->previous = LL_index->previous;
+	                LL_index->previous = task;
+	                break;
+
+	            } else {
+
+	                if (LL_index->next == NULL) { // reached end of list
+	                    task->next = NULL;
+	                    task->previous = LL_index;
+	                    LL_index->next = task;
+	                    taskList->tail = task;
+	                    break;
+	                }
+
+	                LL_index = LL_index->next;
+	            }
+	        }
+	    }
+
+
+	    uint32_t priority_index = PriorityLevel_MAXT;
+
+	    LL_index = taskList->head;
+
+	    while (LL_index != NULL)
+	    {
+	       // printf("[%s-%u]", LL_index->task_name,  priority_index);
+	        vTaskPrioritySet(LL_index->task_handle, priority_index);
+
+	        LL_index = LL_index->next;
+
+	        priority_index--;
+		    //printf("\n");
+
+	    }
 	}
-
-	pTaskHandle_t LL_index = taskList->head;
-	uint32_t priority_index = uxTaskPriorityGet(LL_index->task_handle);
-
-	priority_index++;
-
-	while (LL_index != NULL) {
-
-		// Check if deadline of new task is less than that of the current head of list
-		if (task->absolute_deadline < LL_index->absolute_deadline) {
-
-			// check if Linked list index is the head
-			if (LL_index == taskList->head) {
-				taskList->head = task; // If so, make the head of the list now the new task
-			}
-
-			task->next = LL_index;
-			task->previous = LL_index->previous;
-			LL_index->previous = task;
-
-			vTaskPrioritySet(task->task_handle, priority_index);
-
-			return;
-
-		} else {
-
-			if (LL_index->next == NULL) { // reached end of list
-				task->next = NULL;
-				task->previous = LL_index;
-				LL_index->next = task;
-				taskList->tail = task;
-
-				vTaskPrioritySet(LL_index->task_handle, priority_index); // update the current cell's priority
-				vTaskPrioritySet(task->task_handle, PriorityLevel_HIGH); // as the item is now the bottom, assign it bottom priority.
-				return;
-
-			}
-
-			vTaskPrioritySet(LL_index->task_handle, priority_index);
-			priority_index--;
-			LL_index = LL_index->next;
-		}
-
-	}
-
-}
 
 /*
  * HELPER FUNCTION:
@@ -188,7 +192,7 @@ void remove_DDT_From_LL(pTaskListHandle_t linkedList,
 	}
 
 	//print_LL_Nodes(&linkedList);
-	uint32_t priority_index = uxTaskPriorityGet(LL_index->task_handle); // grab the highest priority value
+//	uint32_t priority_index = PriorityLevel_MAXT; // grab the highest priority value
 
 	while (LL_index != NULL) {
 
@@ -196,20 +200,19 @@ void remove_DDT_From_LL(pTaskListHandle_t linkedList,
 
 			// Insert Task to completed List
 
-			if (linkedList->head->task_handle
-					== linkedList->tail->task_handle) { // if head TH == tail TH, only one element in LL
+			if (linkedList->head->task_handle == linkedList->tail->task_handle) { // if head TH == tail TH, only one element in LL
 
 				linkedList->head = NULL;
 				linkedList->tail = NULL;
 			}
 
-			else if (taskToRemove->task_handle
-					== linkedList->head->task_handle) { // check if attempting to remove head
+			else if (taskToRemove->task_handle == linkedList->head->task_handle) { // check if attempting to remove head
+
 				linkedList->head = LL_index->next;
+
 				LL_index->next->previous = NULL;
 
-			} else if (taskToRemove->task_handle =
-					linkedList->tail->task_handle) { // Check if we are attempting to remove tail of list
+			} else if (taskToRemove->task_handle = linkedList->tail->task_handle) { // Check if we are attempting to remove tail of list
 
 				linkedList->head = LL_index->previous;
 				LL_index->previous->next = NULL;
@@ -230,30 +233,20 @@ void remove_DDT_From_LL(pTaskListHandle_t linkedList,
 				//Free_DDT_NODE(LL_index);
 
 //				free((void*)LL_index);
-				free_NODE_From_LL(&linkedList, LL_index);
+				//free_NODE_From_LL(&linkedList, LL_index);
 			}
 
 			return;
 
 		}
 
-		priority_index--;
 
-		vTaskPrioritySet(LL_index->task_handle, priority_index);
 
 		LL_index = LL_index->next;
 
 	}
 
-	LL_index = linkedList->tail;
-	vTaskPrioritySet(LL_index->task_handle, PriorityLevel_HIGH);
-	priority_index = PriorityLevel_HIGH;
 
-	while (LL_index->previous != NULL) {
-		priority_index++;
-		LL_index = LL_index->previous;
-		vTaskPrioritySet(LL_index->task_handle, priority_index);
-	}
 
 }
 
@@ -268,10 +261,6 @@ void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList,
 		return;
 	}
 
-//	if(Active_TaskList->head->next == NULL){
-//		printf("WHAT THE FUUUUCK\n");
-//		return;
-//	}
 
 	pTaskHandle_t LL_index = Active_TaskList->head;
 
@@ -282,33 +271,9 @@ void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList,
 
 		TickType_t currentTime = xTaskGetTickCount();
 
-
-		//Debugging
-//		if (LL_index->task_state == NULL) {
-//
-//			free(LL_index);
-//			return;
-//		}
-
 		if (LL_index->absolute_deadline < currentTime) { // Deadline has passed
 
 			LL_index->task_state = OverdueState;
-
-//			printf("\n\OVERDUE BEFORE: \n\n");
-//			print_LL_Nodes(&taskList_OVERDUE);
-//
-//			printf("\n\nACTIVE BEFORE: \n\n");
-//						print_LL_Nodes(&taskList_ACTIVE);
-
-			// Remove Task handle from linked list
-
-
-
-//			printf("\n\nACTIVE AFTER: \n\n");
-//			print_LL_Nodes(&taskList_ACTIVE);
-
-
-
 
 			if ((Overdue_TaskList->head == NULL)
 					&& (Overdue_TaskList->tail == NULL)) { // Check if no items are in list
@@ -338,8 +303,7 @@ void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList,
 
 		LL_index = LL_index->next;
 
-//		printf("\n\OVERDUE AFTER: \n\n");
-//		print_LL_Nodes(&taskList_OVERDUE);
+
 
 	}
 

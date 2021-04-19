@@ -1,7 +1,7 @@
-TaskList.c:14:6:Free_DDT_NODE	16	static
-TaskList.c:46:6:free_NODE_From_LL	24	static
-TaskList.c:80:6:Init_DD_TaskList	16	static
-TaskList.c:98:6:Insert_DDT_to_LL	24	static
-TaskList.c:169:6:remove_DDT_From_LL	32	static
-TaskList.c:260:6:Sort_Overdue_From_Active	32	static
-TaskList.c:348:6:add_DDT_to_Completed	32	static
+TaskList.c:16:6:Free_DDT_NODE	16	static
+TaskList.c:48:6:free_NODE_From_LL	24	static
+TaskList.c:82:6:Init_DD_TaskList	16	static
+TaskList.c:100:6:Insert_DDT_to_LL	24	static
+TaskList.c:173:6:remove_DDT_From_LL	32	static
+TaskList.c:253:6:Sort_Overdue_From_Active	32	static
+TaskList.c:312:6:add_DDT_to_Completed	32	static
