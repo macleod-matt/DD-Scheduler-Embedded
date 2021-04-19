@@ -1,0 +1,5 @@
+UserDefinedTasks.c:32:15:Create_DD_Task_Node	16	static
+UserDefinedTasks.c:57:6:Periodic_Task_Routine	48	static
+UserDefinedTasks.c:129:6:Task1_Init	32	static
+UserDefinedTasks.c:154:6:Task2_Init	32	static
+UserDefinedTasks.c:178:6:Task3_Init	32	static
