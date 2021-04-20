@@ -57,6 +57,8 @@ void print_LL_Nodes(pTaskListHandle_t LinkedList) {
 		LL_index = LL_index->next;
 
 	}
+	printf("\n");
+
 	return;
 
 }

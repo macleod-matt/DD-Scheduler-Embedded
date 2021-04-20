@@ -3,8 +3,33 @@
 #include "UserDefinedTasks.h"
 #include "MonitorTask.h"
 
+/*
+ * Test Bench 1 (see macros below):
+ *
+ *  Task                	     execution time   				Period (ms)
+ *  	1                             95                          	500
+ *  	2                             150                         	500
+ *  	3                             250                         	750
+ *
+ *
+ *  Test Bench 2 (see macros below):
+ *
+ *  Task                         execution time         		Period (ms)
+ *  	1	                        95                              250
+ *  	2	                       150                              500
+ *  	3	                       250                              750
+ *
+ *
+ *  Test Bench 3 (see macros below):
+ *
+ *    Task                     execution time            		Period (ms)
+ *  	1	                       100                          	500
+ *  	2	                       200                              500
+ *  	3	                       200                              500
+ */
 
-#define testBench (2)
+
+#define testBench (1)
 
 
 #if testBench == 1
@@ -50,30 +75,6 @@
 
 
 
-/*
- * Test Bench 1 (see macros in UserDefinedTasks.h):
- *
- *  Task                	     execution time   				Period (ms)
- *  	1                             95                          	500
- *  	2                             150                         	500
- *  	3                             250                         	750
- *
- *
- *  Test Bench 2 (see macros in UserDefinedTasks.h):
- *
- *  Task                         execution time         		Period (ms)
- *  	1	                        95                              250
- *  	2	                       150                              500
- *  	3	                       250                              750
- *
- *
- *  Test Bench 3 (see macros in UserDefinedTasks.h):
- *
- *    Task                     execution time            		Period (ms)
- *  	1	                       100                          	500
- *  	2	                       200                              500
- *  	3	                       200                              500
- */
 
 pTaskHandle_t Create_DD_Task_Node(void) {
 	pTaskHandle_t taskNode = (pTaskHandle_t) pvPortMalloc(sizeof(dd_task_t));
@@ -100,7 +101,7 @@ pTaskHandle_t Create_DD_Task_Node(void) {
 
  */
 
-void Periodic_Task_Routine(void *pvParameters) {
+void Task_Routine(void *pvParameters) {
 
 	pTaskHandle_t taskNode = (pTaskHandle_t) pvParameters;
 
@@ -147,6 +148,8 @@ void Periodic_Task_Routine(void *pvParameters) {
 			complete_dd_task(taskNode);
 		}
 
+		// Delete if Task Handle is Aperiotic
+
 		if (taskNode->task_type == DD_APERIODIC) {
 			delete_dd_task(taskNode->task_handle);
 
@@ -159,7 +162,7 @@ void Periodic_Task_Routine(void *pvParameters) {
 }
 
 /*
- * Contains the actual deadline-sensitive application code written by the user.
+ * Generate Task Functions
  *
  *
  *
@@ -171,7 +174,7 @@ void Task1_Generator(void *pvParameters) {
 
 	TickType_t deadline = task1_PERIOD;
 
-	newTask->task_function = Periodic_Task_Routine;
+	newTask->task_function = Task_Routine;
 	newTask->task_name = "Task1";
 	newTask->task_type = DD_PERIODIC;
 	newTask->execution_time = task1_ET;
@@ -194,7 +197,7 @@ void Task2_Generator(void *pvParameters) {
 	TickType_t deadline = task2_PERIOD;
 	pTaskHandle_t newTask = Create_DD_Task_Node();
 
-	newTask->task_function = Periodic_Task_Routine;
+	newTask->task_function = Task_Routine;
 	newTask->task_name = "Task2";
 	newTask->task_type = DD_PERIODIC;
 	newTask->execution_time = task2_ET;
@@ -216,7 +219,7 @@ void Task3_Generator(void *pvParameters) {
 	TickType_t deadline = task3_PERIOD;
 	pTaskHandle_t newTask = Create_DD_Task_Node();
 
-	newTask->task_function = Periodic_Task_Routine;
+	newTask->task_function = Task_Routine;
 	newTask->task_name = "Task3";
 	newTask->task_type = DD_PERIODIC;
 	newTask->execution_time = task3_ET;

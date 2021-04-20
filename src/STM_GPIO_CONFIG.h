@@ -41,7 +41,19 @@ TaskHandle_t taskHandle3;
 # endif
 
 
-#define MONITOR_MODE (1)
+
+#define INSERTLIST_DEBUG (1)
+
+#if INSERTLIST_DEBUG == 1
+
+	#define AList_Print printf
+#else
+	#define AList_Print
+
+#endif
+
+
+#define MONITOR_MODE (0)
 
 
 

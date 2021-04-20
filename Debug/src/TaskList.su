@@ -1,5 +1,5 @@
-TaskList.c:16:6:Init_DD_TaskList	16	static
-TaskList.c:34:6:Insert_DDT_to_LL	24	static
-TaskList.c:108:6:remove_DDT_From_LL	24	static
-TaskList.c:177:6:Sort_Overdue_From_Active	32	static
-TaskList.c:230:6:add_DDT_to_Completed	32	static
+TaskList.c:15:6:Init_DD_TaskList	16	static
+TaskList.c:40:6:Insert_DDT_to_LL	24	static
+TaskList.c:113:6:remove_DDT_From_LL	24	static
+TaskList.c:194:6:Sort_Overdue_From_Active	32	static
+TaskList.c:257:6:add_DDT_to_Completed	40	static

@@ -1,7 +1,7 @@
-DDS.c:26:6:DDS_Task	40	static
-DDS.c:136:15:task_exists_in_List	24	static
-DDS.c:162:10:create_dd_task	72	static
-DDS.c:263:10:release_dd_task	40	static
-DDS.c:290:10:complete_dd_task	48	static
-DDS.c:324:10:delete_dd_task	40	static
-DDS.c:343:6:DDS_Init	16	static
+DDS.c:36:6:DDS_Init	16	static
+DDS.c:73:6:DDS_Task	48	static
+DDS.c:230:15:task_exists_in_List	24	static
+DDS.c:372:10:create_dd_task	72	static
+DDS.c:477:10:release_dd_task	40	static
+DDS.c:516:10:complete_dd_task	48	static
+DDS.c:562:10:delete_dd_task	40	static
