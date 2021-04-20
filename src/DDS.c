@@ -1,9 +1,9 @@
 #include "TaskList.h"
 #include "DDS.h"
 #include "MonitorTask.h"
+#include "STM_GPIO_CONFIG.h"
 
-QueueHandle_t xDDS_Msg_Queue;
-QueueHandle_t xMonitor_Msg_Queue;
+;
 
 
 pTaskHandle_t TaskHandle = NULL;
@@ -365,27 +365,19 @@ void DDS_Init(void) {
 	Init_DD_TaskList(&taskList_OVERDUE);
 	Init_DD_TaskList(&taskList_COMPLETED);
 
-	// Crate Queue for DDS Communication
-	xDDS_Msg_Queue = xQueueCreate(MAX_NUM_DDS_MSGS, sizeof(DD_Message_t));
-
-	vQueueAddToRegistry(xDDS_Msg_Queue, "DDS Queue");
-
-	//Create  Queue for Monitor Messages
-	xMonitor_Msg_Queue = xQueueCreate(MAX_NUM_MONITOR_MSGS,
-			sizeof(DD_Message_t)); // Should only ever have 2 requests on the queue.
-
-
-	vQueueAddToRegistry(xMonitor_Msg_Queue, "Monitor Queue");
 
 	// create tasks for DDS and Monitor Functionality
-	xTaskCreate(DDS_Task, "DDS Task", configMINIMAL_STACK_SIZE, NULL,
-	PriorityLevel_SCHEDULER, NULL);
 
-# if MONITOR_MODE == 1
+	# if MONITOR_MODE == 1
 
-	xTaskCreate(MonitorTask, "Monitor Task", configMINIMAL_STACK_SIZE, NULL,
-	PriorityLevel_MONITOR, NULL);
+		xTaskCreate(Monitor_Task, "Monitor Task", configMINIMAL_STACK_SIZE, NULL,
+		PriorityLevel_MONITOR, NULL);
 
-#endif
+	#endif
+
+
+	xTaskCreate(DDS_Task, "DDS Task", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_SCHEDULER, NULL);
+
+
 
 }

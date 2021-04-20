@@ -3,6 +3,7 @@
 #include "STM_GPIO_CONFIG.h"
 #include "TaskList.h"
 #include "DDS.h"
+#include "MonitorTask.h"
 
 
 
@@ -10,6 +11,9 @@ TaskHandle_t taskHandle1;
 TaskHandle_t taskHandle2;
 TaskHandle_t taskHandle3;
 
+
+xQueueHandle xDDS_Msg_Queue;
+xQueueHandle xMonitor_Msg_Queue;
 
 
 void Read_User_Defined_Tasks(void){
@@ -24,6 +28,19 @@ void Read_User_Defined_Tasks(void){
 
 int main(void)
 {
+
+	// Crate Queue for DDS Communication
+	xDDS_Msg_Queue = xQueueCreate(MAX_NUM_DDS_MSGS, sizeof(DD_Message_t));
+
+	vQueueAddToRegistry(xDDS_Msg_Queue, "DDS Queue");
+
+	//Create  Queue for Monitor Messages
+	xMonitor_Msg_Queue = xQueueCreate(MAX_NUM_MONITOR_MSGS,
+	sizeof(DD_Message_t)); // Should only ever have 2 requests on the queue.
+
+
+	vQueueAddToRegistry(xMonitor_Msg_Queue, "Monitor Queue");
+
 
 	DDS_Init(); //Initalize DDS
 	Read_User_Defined_Tasks(); // Read User defined task

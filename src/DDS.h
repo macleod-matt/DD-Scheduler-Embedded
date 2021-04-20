@@ -6,8 +6,7 @@
 
 
 
-extern QueueHandle_t xDDS_Msg_Queue;
-extern QueueHandle_t xMonitor_Msg_Queue;
+
 
 // Priority levels
 
@@ -27,8 +26,7 @@ extern QueueHandle_t xMonitor_Msg_Queue;
 #define bufferSize (configMAX_TASK_NAME_LEN + 100) // output  tasklist buffersize
 
 
-xQueueHandle xDDS_Msg_Queue;
-xQueueHandle xMonitor_Msg_Queue;
+
 
 
 
@@ -62,7 +60,7 @@ typedef struct DD_Message_t
 
 
 
-
+void DDS_Task(void *pvParameters);
 void DDS_Init(void);
 
 uint32_t create_dd_task(DD_TaskHandle_t );
@@ -78,8 +76,6 @@ extern DD_TaskList_t taskList_ACTIVE;
 extern DD_TaskList_t taskList_OVERDUE;
 extern DD_TaskList_t taskList_COMPLETED;
 
-
-//pNamesNode_t taskList_COMPLETED;
 
 
 #endif

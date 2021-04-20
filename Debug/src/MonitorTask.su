@@ -1,5 +1,5 @@
-MonitorTask.c:20:6:MonitorTask	8	static
-MonitorTask.c:46:6:print_LL_Nodes	24	static
-MonitorTask.c:84:6:get_active_dd_task_list	32	static
-MonitorTask.c:129:6:get_completed_dd_task_list	32	static
-MonitorTask.c:180:6:get_overdue_dd_task_list	32	static
+MonitorTask.c:23:6:Monitor_Task	16	static
+MonitorTask.c:49:6:print_LL_Nodes	24	static
+MonitorTask.c:87:10:get_active_dd_task_list	32	static
+MonitorTask.c:132:10:get_completed_dd_task_list	32	static
+MonitorTask.c:183:10:get_overdue_dd_task_list	32	static
