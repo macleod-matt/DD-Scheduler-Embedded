@@ -38,9 +38,9 @@ typedef enum DD_Message_Type_t
 	Msg_Release_DDT = 0x2,
 	Msg_Delete_DDT = 0x4 ,
 	Msg_Complete_DDT = 0x8,
-	Msg_ActiveList = 0x16 ,
-	Msg_OverDueList = 0x32,
-	Msg_CompleteList = 0x64,
+	Msg_ActiveList = 16 ,
+	Msg_OverDueList = 32,
+	Msg_CompleteList = 64,
 
 
 }DD_Message_Type_t;

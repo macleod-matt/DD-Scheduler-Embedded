@@ -5,7 +5,6 @@
 
 ;
 
-
 pTaskHandle_t TaskHandle = NULL;
 
 DD_TaskList_t taskList_ACTIVE;
@@ -35,71 +34,63 @@ void DDS_Task(void *pvParameters) {
 
 	pTaskHandle_t recievedTask = NULL;
 
-
 	while (1) {
 
-		if ( xQueueReceive(xDDS_Msg_Queue, (void* )&msg, portMAX_DELAY) == pdTRUE) {
+		if ( xQueueReceive(xDDS_Msg_Queue, (void* )&msg,
+				portMAX_DELAY) == pdTRUE) {
 
 			recievedTask = (pTaskHandle_t) msg.data;
 
-			// sorts the overdue nodes from active nodes
-			Sort_Overdue_From_Active(&taskList_ACTIVE, &taskList_OVERDUE);
+			if (recievedTask != NULL) {
 
-			if (msg.type & Msg_Create_DDT) {
+				// sorts the overdue nodes from active nodes
+				Sort_Overdue_From_Active(&taskList_ACTIVE, &taskList_OVERDUE);
 
-				recievedTask->task_state = CreateState;
+				if (msg.type & Msg_Create_DDT) {
 
-				if (!(bool) msg.taskExists) {
+					recievedTask->task_state = CreateState;
 
-					Insert_DDT_to_LL(recievedTask, &taskList_ACTIVE);
+					if (!(bool) msg.taskExists) {
+
+						Insert_DDT_to_LL(recievedTask, &taskList_ACTIVE);
+
+					}
+
+				}
+
+				else if (msg.type & Msg_Release_DDT) {
+
+					recievedTask->task_state = ActiveState;
+
+				}
+
+				else if (msg.type & Msg_Delete_DDT) {
+
+					recievedTask->task_state = DeleteState;
+
+					remove_DDT_From_LL(&taskList_ACTIVE, recievedTask);
+
+				}
+
+				else if (msg.type & Msg_Complete_DDT) {
+
+					recievedTask->task_state = CompleteState;
+
+					// add task to completed LL
+					add_DDT_to_Completed(recievedTask);
 
 				}
 
 			}
 
-			else if (msg.type & Msg_Release_DDT) {
-
-				recievedTask->task_state = ActiveState;
-
-			}
-
-			else if (msg.type & Msg_Delete_DDT) {
-
-				recievedTask->task_state = DeleteState;
-
-				remove_DDT_From_LL(&taskList_ACTIVE, recievedTask);
-
-			}
-
-			else if (msg.type & Msg_Complete_DDT) {
-
-				recievedTask->task_state = CompleteState;
-
-				// add task to completed LL
-				add_DDT_to_Completed(recievedTask);
-
-
-
-
-
-			}
-
-			else if (msg.type & Msg_ActiveList) {
+			if (msg.type & Msg_ActiveList) {
 
 				msg.pList = &taskList_ACTIVE;
 
-				if (xMonitor_Msg_Queue != NULL) {
+				if ( xQueueSend(xMonitor_Msg_Queue, &msg,
+						(TickType_t) portMAX_DELAY) != pdPASS) {
 
-					if (xMonitor_Msg_Queue != NULL) {
-
-						if ( xQueueSend(xMonitor_Msg_Queue, &msg,
-								(TickType_t) portMAX_DELAY) != pdPASS) {
-
-							break;
-						}
-
-					}
-
+					break;
 				}
 
 			}
@@ -108,15 +99,11 @@ void DDS_Task(void *pvParameters) {
 
 				msg.pList = &taskList_OVERDUE;
 
+				if ( xQueueSend(xMonitor_Msg_Queue, &msg,
+						(TickType_t) portMAX_DELAY) != pdPASS) {
 
-				if (xMonitor_Msg_Queue != NULL) {
-					if ( xQueueSend(xMonitor_Msg_Queue, &msg,
-							(TickType_t) portMAX_DELAY) != pdPASS) {
-
-						break;
-					}
+					break;
 				}
-
 
 			}
 
@@ -124,12 +111,10 @@ void DDS_Task(void *pvParameters) {
 
 				msg.pList = &taskList_COMPLETED;
 
-				if (xMonitor_Msg_Queue != NULL) {
-					if ( xQueueSend(xMonitor_Msg_Queue, &msg,
-							(TickType_t) portMAX_DELAY) != pdPASS) {
+				if ( xQueueSend(xMonitor_Msg_Queue, &msg,
+						(TickType_t) portMAX_DELAY) != pdPASS) {
 
-						break;
-					}
+					break;
 				}
 
 			}
@@ -148,7 +133,8 @@ void DDS_Task(void *pvParameters) {
  *
  */
 
-pTaskHandle_t task_exists_in_List(pTaskListHandle_t taskList, pTaskHandle_t task) {
+pTaskHandle_t task_exists_in_List(pTaskListHandle_t taskList,
+		pTaskHandle_t task) {
 
 	if (taskList == NULL || task == NULL) {
 
@@ -245,7 +231,6 @@ uint32_t create_dd_task(pTaskHandle_t newTask) {
 		PriorityLevel_LOW, &(createTask->task_handle));
 
 	}
-
 
 	vTaskSuspend(createTask->task_handle);
 
@@ -365,19 +350,16 @@ void DDS_Init(void) {
 	Init_DD_TaskList(&taskList_OVERDUE);
 	Init_DD_TaskList(&taskList_COMPLETED);
 
-
 	// create tasks for DDS and Monitor Functionality
 
-	# if MONITOR_MODE == 1
+# if MONITOR_MODE == 1
 
-		xTaskCreate(Monitor_Task, "Monitor Task", configMINIMAL_STACK_SIZE, NULL,
-		PriorityLevel_MONITOR, NULL);
+	xTaskCreate(Monitor_Task, "Monitor Task", configMINIMAL_STACK_SIZE, NULL,
+	PriorityLevel_MONITOR, NULL);
 
-	#endif
+#endif
 
-
-	xTaskCreate(DDS_Task, "DDS Task", configMINIMAL_STACK_SIZE, NULL, PriorityLevel_SCHEDULER, NULL);
-
-
+	xTaskCreate(DDS_Task, "DDS Task", configMINIMAL_STACK_SIZE, NULL,
+	PriorityLevel_SCHEDULER, NULL);
 
 }

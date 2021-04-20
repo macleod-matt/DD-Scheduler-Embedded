@@ -74,11 +74,11 @@ void Insert_DDT_to_LL(pTaskHandle_t task, pTaskListHandle_t taskList) {
 	LL_index = taskList->head;
 
 
-	debugPrint("\n");
+	//debugPrint("\n");
 
 	while (LL_index != NULL) {
 
-		debugPrint("[%s-%u]", LL_index->task_name, priority_index);
+		//debugPrint("[%s-%u]", LL_index->task_name, priority_index);
 
 		vTaskPrioritySet(LL_index->task_handle, priority_index);
 
@@ -88,7 +88,7 @@ void Insert_DDT_to_LL(pTaskHandle_t task, pTaskListHandle_t taskList) {
 
 	}
 
-	debugPrint("\n");
+	//debugPrint("\n");
 
 }
 

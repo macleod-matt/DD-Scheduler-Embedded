@@ -4,7 +4,7 @@
 #include "MonitorTask.h"
 
 
-#define testBench (1)
+#define testBench (2)
 
 
 #if testBench == 1
