@@ -3,6 +3,53 @@
 #include "UserDefinedTasks.h"
 #include "MonitorTask.h"
 
+
+#define testBench (1)
+
+
+#if testBench == 1
+
+	# define task1_PERIOD pdMS_TO_TICKS(500)
+	# define task1_ET   pdMS_TO_TICKS(95)
+
+	# define task2_PERIOD pdMS_TO_TICKS(500)
+	# define task2_ET   pdMS_TO_TICKS(150)
+
+	# define task3_PERIOD pdMS_TO_TICKS(750)
+	# define task3_ET  pdMS_TO_TICKS(250)
+
+
+
+#endif
+
+#if testBench == 2
+
+	# define task1_PERIOD pdMS_TO_TICKS(250)
+	# define task1_ET   pdMS_TO_TICKS(95)
+
+	# define task2_PERIOD pdMS_TO_TICKS(500)
+	# define task2_ET   pdMS_TO_TICKS(150)
+
+	# define task3_PERIOD pdMS_TO_TICKS(750)
+	# define task3_ET  pdMS_TO_TICKS(250)
+
+#endif
+
+
+#if testBench == 3
+
+	# define task1_PERIOD pdMS_TO_TICKS(500)
+	# define task1_ET   pdMS_TO_TICKS(100)
+
+	# define task2_PERIOD pdMS_TO_TICKS(500)
+	# define task2_ET   pdMS_TO_TICKS(200)
+
+	# define task3_PERIOD pdMS_TO_TICKS(500)
+	# define task3_ET  pdMS_TO_TICKS(200)
+#endif
+
+
+
 /*
  * Test Bench 1 (see macros in UserDefinedTasks.h):
  *
@@ -73,7 +120,7 @@ void Periodic_Task_Routine(void *pvParameters) {
 			absDeadline = taskNode->absolute_deadline;
 
 			debugPrint(
-					"\n|Executing Task [%s] | Time = %u | Priority = %u | \n",
+					"\nExecuting [%s] | Time: %u | Prior: %u \n",
 					taskNode->task_name, (unsigned int) currentTime,
 					(unsigned int) uxTaskPriorityGet( taskNode->task_handle));
 
@@ -97,10 +144,6 @@ void Periodic_Task_Routine(void *pvParameters) {
 
 			relativeDeadline = absDeadline - currentTime;
 
-//			vTaskDelayUntil(&currentTime, relativeDeadline);
-
-//			taskNode->next = NULL;
-//			taskNode->previous = NULL;
 			complete_dd_task(taskNode);
 		}
 
@@ -140,6 +183,7 @@ void Task1_Generator(void *pvParameters) {
 	while (1) {
 
 		create_dd_task(newTask);
+
 		vTaskDelay(deadline);
 
 	}

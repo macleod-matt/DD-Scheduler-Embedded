@@ -5,10 +5,12 @@
 #include "STM_GPIO_CONFIG.h"
 
 
-uint32_t get_active_dd_task_list(void);
-uint32_t get_completed_dd_task_list(void);
-uint32_t get_overdue_dd_task_list(void);
+void get_active_dd_task_list(void);
+void get_completed_dd_task_list(void);
+void get_overdue_dd_task_list(void);
 
+QueueHandle_t xDDS_Msg_Queue;
+QueueHandle_t xMonitor_Msg_Queue;
 /*
  *
  * F-Task to extract information from the DDS and report scheduling information.
@@ -17,15 +19,16 @@ uint32_t get_overdue_dd_task_list(void);
 
 void MonitorTask(void){
 
+
+
 	while (1) {
 
-		debugPrint("\n\n MONITORING TASK:\n Current Time: [%u]\n Priority Level: [%u] \n\n",
-				(unsigned int) xTaskGetTickCount(),
-				(unsigned int) uxTaskPriorityGet( NULL));
-
+		debugPrint("\nMONITORING TASK:\n");
 		get_active_dd_task_list();
 		get_completed_dd_task_list();
 		get_overdue_dd_task_list();
+
+		vTaskDelay(100);
 
 	}
 
@@ -56,16 +59,13 @@ void print_LL_Nodes(pTaskListHandle_t LinkedList) {
 
 	pTaskHandle_t LL_index = LinkedList->head;
 
-
 	while (LL_index != NULL) {
 
-		printf("\nTask: [%s], Deadline: [%u] \n", LL_index->task_name,
+		printf("Task: [%s], Deadline: [%u]", LL_index->task_name,
 				(unsigned int) LL_index->absolute_deadline);
 
-		//vPortFree((void*) LL_index); // free memory block
-
+		printf("\n");
 		LL_index = LL_index->next;
-		//delete_dd_task(LL_index);
 
 	}
 	return;
@@ -79,12 +79,11 @@ void print_LL_Nodes(pTaskListHandle_t LinkedList) {
  *
  * This function sends a message to a queue requesting the Active Task List from the DDS.
  * Once a response is received from the DDS, the function returns the list.
- *
  */
 
-uint32_t get_active_dd_task_list(void) {
+void get_active_dd_task_list(void) {
 
-	DD_Message_t msg_activeList = { Msg_ActiveList, NULL, NULL, NULL };
+	DD_Message_t msg_activeList = { Msg_ActiveList, NULL, NULL, NULL ,NULL };
 
 	if (xDDS_Msg_Queue != NULL) // Check that the queue exists
 	{
@@ -93,11 +92,11 @@ uint32_t get_active_dd_task_list(void) {
 
 			printf(
 					"\nERROR:Unable to send ACTIVE LIST message to DDS Msg Queue!\n");
-			return 0;
+			return ;
 		}
 	} else {
 		printf("ERROR: DD_Scheduler_Message_Queue is NULL.\n");
-		return 0;
+		return ;
 	}
 
 	if (xMonitor_Msg_Queue != NULL) // Check that the queue exists
@@ -116,7 +115,7 @@ uint32_t get_active_dd_task_list(void) {
 		printf("ERROR: DD_Monitor_Message_Queue is NULL.\n");
 		return 0;
 	}
-	return 1;
+	return ;
 
 }
 
@@ -127,9 +126,9 @@ uint32_t get_active_dd_task_list(void) {
  *
  */
 
-uint32_t get_completed_dd_task_list(void) {
+void get_completed_dd_task_list(void) {
 
-	DD_Message_t msg_completedList = { Msg_CompleteList, NULL, NULL, NULL };
+	DD_Message_t msg_completedList = { Msg_CompleteList, NULL, NULL, NULL, NULL };
 
 	if (xDDS_Msg_Queue != NULL) // Check that the queue exists
 	{
@@ -139,27 +138,28 @@ uint32_t get_completed_dd_task_list(void) {
 
 			printf(
 					"\nERROR:Unable to send COMPLETED LIST message to DDS Msg Queue!\n");
-			return 0;
+			return ;
 		}
 	} else {
 		printf("ERROR: DD_Scheduler_Message_Queue is NULL.\n");
-		return 0;
+		return ;
 	}
+
+//	debugPrint("COMPLETED TASKS:");
+//
+//	print_LL_Nodes(&taskList_COMPLETED);
+
+
 
 	if (xMonitor_Msg_Queue != NULL) // Check that the queue exists
 	{
 		if ( xQueueReceive(xMonitor_Msg_Queue, &msg_completedList,
 				portMAX_DELAY) == pdTRUE) {
 
-			debugPrint(
-					"\n\n................COMPLETED TASKS: .................: \n\n");
+			debugPrint("COMPLETED TASKS:\n");
 
 			print_LL_Nodes(msg_completedList.pList);
 
-			debugPrint(
-					"\n\n...................................................\n\n");
-
-			//vPortFree((void*)msg_completedList.pList);
 
 			msg_completedList.pList = NULL;
 		}
@@ -167,7 +167,7 @@ uint32_t get_completed_dd_task_list(void) {
 		printf("ERROR: DD_Monitor_Message_Queue is NULL.\n");
 		return 0;
 	}
-	return 1;
+	return ;
 
 }
 
@@ -177,9 +177,9 @@ uint32_t get_completed_dd_task_list(void) {
  *
  */
 
-uint32_t get_overdue_dd_task_list(void) {
+void get_overdue_dd_task_list(void) {
 
-	DD_Message_t msg_overdueList = { Msg_OverDueList, NULL, NULL, NULL, NULL };
+	DD_Message_t msg_overdueList = { Msg_OverDueList, NULL, NULL, NULL, NULL , NULL };
 //
 	if (xDDS_Msg_Queue != NULL) // Check that the queue exists
 	{
@@ -190,27 +190,27 @@ uint32_t get_overdue_dd_task_list(void) {
 			printf(
 					"\nERROR:Unable to send OVERDUE LIST message to DDS Msg Queue!\n");
 
-			return 0;
+			return ;
 		}
 	} else {
 		printf("ERROR: DD_Scheduler_Message_Queue is NULL.\n");
-		return 0;
+		return ;
 	}
+
+//	debugPrint("OVERDUE TASKS:");
+//
+//	print_LL_Nodes(&taskList_OVERDUE);
+
 
 	if (xMonitor_Msg_Queue != NULL) // Check that the queue exists
 	{
 		if ( xQueueReceive(xMonitor_Msg_Queue, &msg_overdueList,
 				portMAX_DELAY) == pdTRUE) {
 
-			debugPrint(
-					"\n\n................OVERDUE TASKS .................: \n\n");
-
+			debugPrint("OVERDUE TASKS:\n");
 			print_LL_Nodes(msg_overdueList.pList);
 
-			//vPortFree((void*)msg_overdueList.pList);
 
-			debugPrint(
-					"\n\n................................................\n\n");
 
 			msg_overdueList.pList = NULL;
 		}
@@ -219,7 +219,7 @@ uint32_t get_overdue_dd_task_list(void) {
 		return 0;
 	}
 
-	return 1;
+	return ;
 
 }
 

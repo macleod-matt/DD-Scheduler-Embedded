@@ -2,17 +2,15 @@
 #include "DDS.h"
 #include "MonitorTask.h"
 
-EventGroupHandle_t xTaskStatus;
 QueueHandle_t xDDS_Msg_Queue;
+QueueHandle_t xMonitor_Msg_Queue;
+
 
 pTaskHandle_t TaskHandle = NULL;
-
 
 DD_TaskList_t taskList_ACTIVE;
 DD_TaskList_t taskList_OVERDUE;
 DD_TaskList_t taskList_COMPLETED;
-
-
 
 uint32_t create_dd_task( DD_TaskHandle_t);
 uint32_t release_dd_task( DD_TaskHandle_t);
@@ -27,20 +25,22 @@ uint32_t complete_dd_task(pTaskHandle_t pTask);
  */
 
 void DDS_Task(void *pvParameters) {
-	printf("Starting Scheduler:\n");
+
+	debugPrint("\n");
+	debugPrint("Starting Scheduler:");
+	debugPrint("\n");
+	debugPrint("\n");
 
 	DD_Message_t msg;
 
 	pTaskHandle_t recievedTask = NULL;
 
-	uint8_t testCounter = 0;
 
 	while (1) {
 
-		if ( xQueueReceive(xDDS_Msg_Queue, (void* )&msg,
-				portMAX_DELAY) == pdTRUE) {
-			recievedTask = (pTaskHandle_t) msg.data;
+		if ( xQueueReceive(xDDS_Msg_Queue, (void* )&msg, portMAX_DELAY) == pdTRUE) {
 
+			recievedTask = (pTaskHandle_t) msg.data;
 
 			// sorts the overdue nodes from active nodes
 			Sort_Overdue_From_Active(&taskList_ACTIVE, &taskList_OVERDUE);
@@ -55,7 +55,6 @@ void DDS_Task(void *pvParameters) {
 
 				}
 
-
 			}
 
 			else if (msg.type & Msg_Release_DDT) {
@@ -68,7 +67,7 @@ void DDS_Task(void *pvParameters) {
 
 				recievedTask->task_state = DeleteState;
 
-				remove_DDT_From_LL(&taskList_ACTIVE, recievedTask, true);
+				remove_DDT_From_LL(&taskList_ACTIVE, recievedTask);
 
 			}
 
@@ -79,7 +78,9 @@ void DDS_Task(void *pvParameters) {
 				// add task to completed LL
 				add_DDT_to_Completed(recievedTask);
 
-//				create_dd_task(recievedTask);
+
+
+
 
 			}
 
@@ -87,13 +88,10 @@ void DDS_Task(void *pvParameters) {
 
 				msg.pList = &taskList_ACTIVE;
 
-				if (uxQueueSpacesAvailable(xMonitor_Msg_Queue) == 0) {
-					xQueueReset(xMonitor_Msg_Queue);
-				}
-
 				if (xMonitor_Msg_Queue != NULL) {
 
 					if (xMonitor_Msg_Queue != NULL) {
+
 						if ( xQueueSend(xMonitor_Msg_Queue, &msg,
 								(TickType_t) portMAX_DELAY) != pdPASS) {
 
@@ -110,9 +108,6 @@ void DDS_Task(void *pvParameters) {
 
 				msg.pList = &taskList_OVERDUE;
 
-				if (uxQueueSpacesAvailable(xMonitor_Msg_Queue) == 0) {
-					xQueueReset(xMonitor_Msg_Queue);
-				}
 
 				if (xMonitor_Msg_Queue != NULL) {
 					if ( xQueueSend(xMonitor_Msg_Queue, &msg,
@@ -121,6 +116,7 @@ void DDS_Task(void *pvParameters) {
 						break;
 					}
 				}
+
 
 			}
 
@@ -128,10 +124,6 @@ void DDS_Task(void *pvParameters) {
 
 				msg.pList = &taskList_COMPLETED;
 
-				if (uxQueueSpacesAvailable(xMonitor_Msg_Queue) == 0) {
-					xQueueReset(xMonitor_Msg_Queue);
-				}
-
 				if (xMonitor_Msg_Queue != NULL) {
 					if ( xQueueSend(xMonitor_Msg_Queue, &msg,
 							(TickType_t) portMAX_DELAY) != pdPASS) {
@@ -141,7 +133,6 @@ void DDS_Task(void *pvParameters) {
 				}
 
 			}
-
 
 		}
 	}
@@ -157,8 +148,7 @@ void DDS_Task(void *pvParameters) {
  *
  */
 
-pTaskHandle_t task_exists_in_List(pTaskListHandle_t taskList,
-		pTaskHandle_t task) {
+pTaskHandle_t task_exists_in_List(pTaskListHandle_t taskList, pTaskHandle_t task) {
 
 	if (taskList == NULL || task == NULL) {
 
@@ -183,8 +173,6 @@ pTaskHandle_t task_exists_in_List(pTaskListHandle_t taskList,
 
 }
 
-
-
 uint32_t create_dd_task(pTaskHandle_t newTask) {
 
 	if (newTask == NULL) {
@@ -206,6 +194,7 @@ uint32_t create_dd_task(pTaskHandle_t newTask) {
 			&taskList_COMPLETED, newTask);
 
 	pTaskHandle_t createTask = NULL;
+
 	bool task_exists = false;
 
 	if (taskExists_ACTIVE != NULL) {
@@ -257,21 +246,19 @@ uint32_t create_dd_task(pTaskHandle_t newTask) {
 
 	}
 
-	//createTask->task_state = ActiveState;
 
 	vTaskSuspend(createTask->task_handle);
-
 
 	DD_Message_t create_task_msg = { Msg_Create_DDT, createTask->task_handle,
 			createTask,
 			NULL, task_exists };
 
+	debugPrint("\n");
 
+	debugPrint("[%s] Released | Time [%u]", createTask->task_name,
+			xTaskGetTickCount());
 
-	debugPrint("\n\n| Task [%s] Released | current Time [%u] | \n\n", createTask->task_name,  xTaskGetTickCount());
-
-
-
+	debugPrint("\n");
 
 	if ( xQueueSend(xDDS_Msg_Queue, &create_task_msg,
 			portMAX_DELAY) != pdPASS) // ensure the message was sent
@@ -315,7 +302,6 @@ uint32_t release_dd_task(pTaskHandle_t pTask) {
 
 }
 
-
 uint32_t complete_dd_task(pTaskHandle_t pTask) {
 
 	if (pTask == NULL) {
@@ -331,10 +317,14 @@ uint32_t complete_dd_task(pTaskHandle_t pTask) {
 			NULL,
 			NULL };
 
-	debugPrint("\n\n|Task [%s] Completed | current Time [%u] |\n\n",
-			pTask->task_name, (unsigned int) xTaskGetTickCount());
+	debugPrint("\n");
 
-	vTaskSuspend(NULL);
+	debugPrint("[%s] Completed | Time [%u]", pTask->task_name,
+			(unsigned int) xTaskGetTickCount());
+
+	debugPrint("\n");
+
+	vTaskSuspend(pTask->task_handle);
 
 	if ( xQueueSend(xDDS_Msg_Queue, &msg_Complete_Task,portMAX_DELAY) != pdPASS) {
 		printf(
@@ -359,8 +349,6 @@ uint32_t delete_dd_task(pTaskHandle_t pTaskToDelete) {
 		return 0;
 	}
 
-	TEST_ulTaskNotifyTake( pdTRUE, portMAX_DELAY ); // ignore
-
 	vTaskDelete(pTaskToDelete->task_handle);
 
 	return 1;
@@ -369,7 +357,9 @@ uint32_t delete_dd_task(pTaskHandle_t pTaskToDelete) {
 
 void DDS_Init(void) {
 
-	debugPrint("Init Task lists: \n");
+	debugPrint("Init Task lists:");
+
+	debugPrint("\n");
 
 	Init_DD_TaskList(&taskList_ACTIVE);
 	Init_DD_TaskList(&taskList_OVERDUE);
@@ -377,18 +367,22 @@ void DDS_Init(void) {
 
 	// Crate Queue for DDS Communication
 	xDDS_Msg_Queue = xQueueCreate(MAX_NUM_DDS_MSGS, sizeof(DD_Message_t));
+
 	vQueueAddToRegistry(xDDS_Msg_Queue, "DDS Queue");
 
 	//Create  Queue for Monitor Messages
 	xMonitor_Msg_Queue = xQueueCreate(MAX_NUM_MONITOR_MSGS,
 			sizeof(DD_Message_t)); // Should only ever have 2 requests on the queue.
+
+
 	vQueueAddToRegistry(xMonitor_Msg_Queue, "Monitor Queue");
 
 	// create tasks for DDS and Monitor Functionality
 	xTaskCreate(DDS_Task, "DDS Task", configMINIMAL_STACK_SIZE, NULL,
-	PrioirtyLevel_MAX, NULL);
+	PriorityLevel_SCHEDULER, NULL);
 
 # if MONITOR_MODE == 1
+
 	xTaskCreate(MonitorTask, "Monitor Task", configMINIMAL_STACK_SIZE, NULL,
 	PriorityLevel_MONITOR, NULL);
 

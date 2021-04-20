@@ -4,10 +4,10 @@
 
 void print_LL_Nodes(pTaskListHandle_t LinkedList);
 
-uint32_t get_active_dd_task_list(void);
-uint32_t get_completed_dd_task_list(void);
-uint32_t get_overdue_dd_task_list(void);
 
+void get_active_dd_task_list(void);
+void get_completed_dd_task_list(void);
+void get_overdue_dd_task_list(void);
 
 
 

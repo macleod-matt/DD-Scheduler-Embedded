@@ -6,6 +6,9 @@
 
 
 
+extern QueueHandle_t xDDS_Msg_Queue;
+extern QueueHandle_t xMonitor_Msg_Queue;
+
 // Priority levels
 
 
@@ -15,7 +18,7 @@
 #define PriorityLevel_MAXT (7)
 #define PriorityLevel_UTIL (8)
 #define PriorityLevel_MONITOR (9)
-#define PrioirtyLevel_MAX (10)
+#define PriorityLevel_SCHEDULER (10)
 
 
 
@@ -37,10 +40,9 @@ typedef enum DD_Message_Type_t
 	Msg_Release_DDT = 0x2,
 	Msg_Delete_DDT = 0x4 ,
 	Msg_Complete_DDT = 0x8,
-	Msg_Suspend_DDT = 0x16,
-	Msg_ActiveList = 0x32 ,
-	Msg_OverDueList = 0x64,
-	Msg_CompleteList = 0x128,
+	Msg_ActiveList = 0x16 ,
+	Msg_OverDueList = 0x32,
+	Msg_CompleteList = 0x64,
 
 
 }DD_Message_Type_t;

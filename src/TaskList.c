@@ -13,72 +13,6 @@
 
 
 
-bool Free_DDT_NODE(pTaskHandle_t task_to_remove) {
-	// Check input parameters are not NULL
-	if (task_to_remove == NULL) {
-		printf(
-				"ERROR(DD_Task_Free): one of the pa1rameters passed was NULL.\n");
-		return false;
-	}
-
-	// return false if the task wasn't removed from active/overdue queue, or removed from active tasks.
-	if (task_to_remove->next != NULL || task_to_remove->previous != NULL) {
-		printf(
-				"ERROR(DD_Task_Free): Forgot to remove task from list, not deleting it. Fix the code.\n");
-		return false;
-	}
-
-	// Reset the data before freeing - some errors can occur if not done
-	task_to_remove->task_handle = NULL;
-	task_to_remove->task_function = NULL;
-	task_to_remove->task_name = "";
-	task_to_remove->task_type = DD_PERIODIC;
-	task_to_remove->release_time = 0;
-	task_to_remove->absolute_deadline = 0;
-	task_to_remove->task_state = 0;
-	task_to_remove->next = NULL;
-	task_to_remove->previous = NULL;
-
-	// free the memory used by the task
-	vPortFree((void*) task_to_remove);
-
-	return true;
-}
-
-void free_NODE_From_LL(pTaskListHandle_t taskList, pTaskHandle_t node) {
-
-	if (node == NULL) {
-		printf(
-				"ERROR(DD_Task_Free): one of the pa1rameters passed was NULL.\n");
-		return false;
-	}
-
-	// return false if the task wasn't removed from active/overdue queue, or removed from active tasks.
-	if (node->next != NULL || node->previous != NULL) {
-		printf(
-				"ERROR(DD_Task_Free): Forgot to remove task from list, not deleting it. Fix the code.\n");
-		return false;
-	}
-
-	pTaskHandle_t iterator = taskList->head;
-
-	while (iterator != NULL) {
-
-		if (iterator->task_handle == node->task_handle) {
-
-			free((void*) node);
-			return;
-		}
-
-		if (iterator->task_handle == NULL) {
-
-			return;
-		}
-	}
-	return;
-
-}
-
 void Init_DD_TaskList(pTaskListHandle_t DDT_List) {
 	// Check input parameters are not NULL
 
@@ -99,63 +33,64 @@ void Init_DD_TaskList(pTaskListHandle_t DDT_List) {
 
 void Insert_DDT_to_LL(pTaskHandle_t task, pTaskListHandle_t taskList) {
 
+	pTaskHandle_t LL_index = taskList->head;
 
-	    pTaskHandle_t LL_index = taskList->head;
+	if ((taskList->head == NULL) && (taskList->tail == NULL)) {
+		taskList->head = task;
+		taskList->tail = task;
+	} else {
+		while (LL_index != NULL) {
 
+			// Check if deadline of new task is less than that of the current head of list
+			if (task->absolute_deadline < LL_index->absolute_deadline) {
 
-	    if ((taskList->head == NULL) && (taskList->tail == NULL)) {
-	        taskList->head = task;
-	        taskList->tail = task;
-	    }
-	    else
-	    {
-	        while (LL_index != NULL) {
+				// check if Linked list index is the head
+				if (LL_index == taskList->head) {
+					taskList->head = task; // If so, make the head of the list now the new task
+				}
 
-	            // Check if deadline of new task is less than that of the current head of list
-	            if (task->absolute_deadline < LL_index->absolute_deadline) {
+				task->next = LL_index;
+				task->previous = LL_index->previous;
+				LL_index->previous = task;
+				break;
 
-	                // check if Linked list index is the head
-	                if (LL_index == taskList->head) {
-	                    taskList->head = task; // If so, make the head of the list now the new task
-	                }
+			} else {
 
-	                task->next = LL_index;
-	                task->previous = LL_index->previous;
-	                LL_index->previous = task;
-	                break;
+				if (LL_index->next == NULL) { // reached end of list
+					task->next = NULL;
+					task->previous = LL_index;
+					LL_index->next = task;
+					taskList->tail = task;
+					break;
+				}
 
-	            } else {
-
-	                if (LL_index->next == NULL) { // reached end of list
-	                    task->next = NULL;
-	                    task->previous = LL_index;
-	                    LL_index->next = task;
-	                    taskList->tail = task;
-	                    break;
-	                }
-
-	                LL_index = LL_index->next;
-	            }
-	        }
-	    }
-
-
-	    uint32_t priority_index = PriorityLevel_MAXT;
-
-	    LL_index = taskList->head;
-
-	    while (LL_index != NULL)
-	    {
-	       // printf("[%s-%u]", LL_index->task_name,  priority_index);
-	        vTaskPrioritySet(LL_index->task_handle, priority_index);
-
-	        LL_index = LL_index->next;
-
-	        priority_index--;
-		    //printf("\n");
-
-	    }
+				LL_index = LL_index->next;
+			}
+		}
 	}
+
+	uint32_t priority_index = PriorityLevel_MAXT;
+
+	LL_index = taskList->head;
+
+
+	debugPrint("\n");
+
+	while (LL_index != NULL) {
+
+		debugPrint("[%s-%u]", LL_index->task_name, priority_index);
+
+		vTaskPrioritySet(LL_index->task_handle, priority_index);
+
+		LL_index = LL_index->next;
+
+		priority_index--;
+
+	}
+
+	debugPrint("\n");
+
+}
 
 /*
  * HELPER FUNCTION:
@@ -170,8 +105,7 @@ void Insert_DDT_to_LL(pTaskHandle_t task, pTaskListHandle_t taskList) {
  *
  */
 
-void remove_DDT_From_LL(pTaskListHandle_t linkedList,
-		pTaskHandle_t taskToRemove, bool delete_node) {
+void remove_DDT_From_LL(pTaskListHandle_t linkedList, pTaskHandle_t taskToRemove) {
 
 	if (linkedList == NULL) {
 
@@ -191,16 +125,14 @@ void remove_DDT_From_LL(pTaskListHandle_t linkedList,
 
 	}
 
-	//print_LL_Nodes(&linkedList);
-//	uint32_t priority_index = PriorityLevel_MAXT; // grab the highest priority value
-
 	while (LL_index != NULL) {
 
 		if (LL_index->task_handle == taskToRemove->task_handle) {
 
 			// Insert Task to completed List
 
-			if (linkedList->head->task_handle == linkedList->tail->task_handle) { // if head TH == tail TH, only one element in LL
+			if (linkedList->head->task_handle
+					== linkedList->tail->task_handle) { // if head TH == tail TH, only one element in LL
 
 				linkedList->head = NULL;
 				linkedList->tail = NULL;
@@ -215,6 +147,7 @@ void remove_DDT_From_LL(pTaskListHandle_t linkedList,
 			} else if (taskToRemove->task_handle = linkedList->tail->task_handle) { // Check if we are attempting to remove tail of list
 
 				linkedList->head = LL_index->previous;
+
 				LL_index->previous->next = NULL;
 
 			}
@@ -222,36 +155,26 @@ void remove_DDT_From_LL(pTaskListHandle_t linkedList,
 			else { // Removing somewhere in the middle of the list
 
 				LL_index->previous->next = LL_index->next;
+
 				LL_index->next->previous = LL_index->previous;
 
 			}
+
 			LL_index->previous = NULL;
+
 			LL_index->next = NULL;
-
-			if (delete_node) {
-
-				//Free_DDT_NODE(LL_index);
-
-//				free((void*)LL_index);
-				//free_NODE_From_LL(&linkedList, LL_index);
-			}
 
 			return;
 
 		}
 
-
-
 		LL_index = LL_index->next;
 
 	}
 
-
-
 }
 
-void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList,
-		pTaskListHandle_t Overdue_TaskList) {
+void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList, pTaskListHandle_t Overdue_TaskList) {
 
 	// Check input parameters are not NULL
 
@@ -261,9 +184,7 @@ void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList,
 		return;
 	}
 
-
 	pTaskHandle_t LL_index = Active_TaskList->head;
-
 
 	pTaskHandle_t tempNode;
 
@@ -293,8 +214,7 @@ void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList,
 
 			// Remove Node From Ative List
 
-			remove_DDT_From_LL(&taskList_ACTIVE, LL_index, true);
-
+			remove_DDT_From_LL(&taskList_ACTIVE, LL_index);
 
 		} else {
 
@@ -302,8 +222,6 @@ void Sort_Overdue_From_Active(pTaskListHandle_t Active_TaskList,
 		}
 
 		LL_index = LL_index->next;
-
-
 
 	}
 
@@ -313,9 +231,9 @@ void add_DDT_to_Completed(pTaskHandle_t pTask) {
 
 	if (pTask == NULL) {
 
-		printf(
-				"ERROR: Request to create task with null pointer to task handle\n");
-		return 0;
+//		printf(
+//				"ERROR: Request to create task with null pointer to task handle\n");
+		return ;
 
 	}
 
@@ -349,6 +267,9 @@ void add_DDT_to_Completed(pTaskHandle_t pTask) {
 
 	}
 
+	// remove task from Active or overdue list
+
+
 	pTaskHandle_t taskExists_ACTIVE = task_exists_in_List(&taskList_ACTIVE,
 			pTask);
 
@@ -356,13 +277,13 @@ void add_DDT_to_Completed(pTaskHandle_t pTask) {
 			pTask);
 
 	if (taskExists_ACTIVE != NULL) {
-		remove_DDT_From_LL(&taskList_ACTIVE, pTask, false);
+		remove_DDT_From_LL(&taskList_ACTIVE, pTask);
 
 	}
 
 	else if (taskExists_OVERDUE != NULL) {
 
-		remove_DDT_From_LL(&taskExists_OVERDUE, pTask, false);
+		remove_DDT_From_LL(&taskExists_OVERDUE, pTask);
 
 	}
 
