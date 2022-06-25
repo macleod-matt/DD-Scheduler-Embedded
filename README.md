@@ -124,15 +124,15 @@ sort the tasks into the active, overdue and completed statues
       be improved to mitigate the potential for malloc failures as the current design
       involves using the task_exists_in_List() function to return a pointer to the
       memory location within the list:
-    
-    ![image](https://user-images.githubusercontent.com/61804317/175793237-19cb23d6-ee46-4def-a32b-ca0c6a433350.png)
+ 
+   ![image](https://user-images.githubusercontent.com/61804317/175793278-9d9711d5-1b76-4bcd-ab5c-ff5fda2999d3.png)
 
 
   **3. Changing the delay driven Monitor_Task to an event driven Monitor_Task**
 
-    - Having an event trigger the task-preemption will ensure that the current task is in
-      a block state preventing the contention experienced when stress testing the
-      program. 
+   - Having an event trigger the task-preemption will ensure that the current task is in
+     a block state preventing the contention experienced when stress testing the
+     program. 
 
 
 ## Summary 
