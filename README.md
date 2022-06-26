@@ -1,6 +1,6 @@
 ## Introduction 
 
-This document outlines the proposed solution for the Deadline Driven Scheduler. This solution
+The following source code is a solution for a simmulated Deadline Driven Scheduler using FreeRTOS. This solution
 is an embedded software capable of creating and scheduling real time tasks, assigning priority
 based on their deadline for completion as shown in Figure 1 below:
 
@@ -8,11 +8,9 @@ based on their deadline for completion as shown in Figure 1 below:
 
 This project was developed as an embedded software solution onboard an STM32F0 discovery
 board, utilizing the open source STM32F4 and FreeRTOS API’s. The final solution consisted of
-the following FreeRTOS objects: 2 xTasks [2], 2 queues [2] but required several helper functions
+the following FreeRTOS objects: 2 xTasks, 2 queues but required several helper functions
 to accommodate the linked list manipulation required to create the tasks.
-All interactions with the STM board were made via remote access into the Uvic ECE
-laboratories. The final solution was demonstrated to the Lab TA and met all functional
-requirements.
+ 
 
 ## Design Solution 
 
